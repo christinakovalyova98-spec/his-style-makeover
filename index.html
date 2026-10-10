@@ -1,0 +1,950 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<title>His Style Makeover</title>
+<style>
+/* Layout: one narrow column per quiz screen; answer buttons stay pinned at the bottom; the final page widens to 760px and scrolls. Light theme only: cool blue-grey ground, white answer cards, navy accent, brass highlight. Revera's layout logic in men's colours. */
+:root{
+  --bg:#EDF0F4;
+  --surface:#FFFFFF;
+  --panel:#DFE5EC;
+  --ink:#101923;
+  --muted:#38434F;
+  --faint:#56616D;
+  --line:#C3CCD7;
+  --accent:#1C3557;
+  --accent-ink:#FFFFFF;
+  --accent-soft:#DCE6F2;
+  --brass:#B07A35;
+  --brass-ink:#7E5320;
+  --error:#A3321F;
+  --shadow:0 1px 2px rgba(16,25,35,.06),0 3px 10px rgba(16,25,35,.06);
+  --font-display:Georgia,"Times New Roman",serif;
+  --font-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:18px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+.app{min-height:100%;display:flex;flex-direction:column;max-width:480px;margin:0 auto;padding-inline:16px;padding-block:0 0}
+.app.wide{max-width:760px}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:10px 8px}
+.bar{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;height:40px}
+.back{width:40px;height:40px;border:0;background:transparent;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--ink)}
+.back:hover{background:var(--panel)}
+.back.off{visibility:hidden;pointer-events:none}
+.back svg{width:22px;height:22px}
+.brand{text-align:center;font-family:var(--font-body);font-weight:800;font-size:14px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink)}
+.brand b{color:var(--brass);font-weight:800}
+.count{text-align:right;font-size:14px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.progress{height:5px;background:#D3DAE3;border-radius:5px;overflow:hidden;margin-top:6px}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--brass));width:0;transition:width .45s ease;border-radius:5px}
+main{flex:1;display:flex;flex-direction:column}
+.screen{flex:1;display:flex;flex-direction:column;gap:14px;padding-top:10px;padding-bottom:20px;animation:in .35s ease both}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.eyebrow{align-self:flex-start;font-size:14px;font-weight:700;color:var(--brass-ink)}
+.pill{align-self:flex-start;font-size:14px;font-weight:700;color:var(--accent);background:var(--accent-soft);padding:5px 12px;border-radius:30px}
+h1,h2,h3{font-family:var(--font-display);font-weight:700;margin:0;text-wrap:balance;line-height:1.18;color:var(--ink)}
+h1{font-size:30px}
+h2{font-size:25px}
+.sub{margin:0;color:var(--muted);font-size:17px;text-wrap:pretty}
+.hint{margin:-6px 0 0;color:var(--muted);font-size:15px}
+.options{display:flex;flex-direction:column;gap:9px}
+.opt{display:flex;align-items:center;gap:12px;min-height:54px;padding:11px 16px;border:2px solid var(--line);background:var(--surface);border-radius:14px;text-align:left;cursor:pointer;font-size:17px;font-weight:500;line-height:1.3;box-shadow:var(--shadow);transition:transform .12s ease,border-color .15s,background .15s;animation:pop .35s ease both}
+.opt:hover{border-color:#9FAEBF}
+.opt:active{transform:scale(.98)}
+.opt:focus-visible,.card:focus-visible,.btn:focus-visible,.back:focus-visible,.plan:focus-visible,summary:focus-visible{outline:3px solid var(--brass);outline-offset:2px}
+.opt .box{flex:none;width:22px;height:22px;border-radius:6px;border:2px solid #8C9AAA;display:grid;place-items:center;background:var(--surface)}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.sel .box{background:var(--accent);border-color:var(--accent)}
+.opt.sel .box::after{content:"";width:6px;height:11px;border:solid var(--accent-ink);border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.card{position:relative;display:flex;flex-direction:column;border:2px solid var(--line);background:var(--surface);border-radius:14px;overflow:hidden;cursor:pointer;padding:0;text-align:left;box-shadow:var(--shadow);transition:transform .12s,border-color .15s;animation:pop .35s ease both}
+.card:active{transform:scale(.98)}
+.card img{display:block;width:100%;object-fit:cover;background:var(--panel)}
+.card .lbl{padding:8px 10px 10px;font-size:15px;font-weight:700;line-height:1.25}
+.card .lbl small{display:block;font-weight:500;color:var(--muted);font-size:13px;margin-top:2px}
+.card.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.card.sel .lbl{background:var(--accent-soft)}
+.card .tick{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;background:var(--surface);border:2px solid #8C9AAA;display:grid;place-items:center;z-index:1}
+.card.sel .tick{background:var(--accent);border-color:var(--accent)}
+.card.sel .tick::after{content:"";width:6px;height:11px;border:solid var(--accent-ink);border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.img-sq{aspect-ratio:1/1;max-height:calc((100dvh - 290px)/2)}
+.img-pt{aspect-ratio:3/4;max-height:calc((100dvh - 300px)/2);object-position:center top}
+.look-img{aspect-ratio:3/4;object-position:center top}
+.agecard img{aspect-ratio:4/5;object-position:center 12%;max-height:calc((100dvh - 410px)/2)}
+.agecard .lbl{text-align:center;font-size:18px}
+.shape img{aspect-ratio:1/2;object-fit:contain;max-height:calc((100dvh - 320px)/2);background:#EFEBE4}
+.shape .unsure{display:grid;place-items:center;aspect-ratio:1/2;max-height:calc((100dvh - 320px)/2);background:#EFEBE4;font-family:var(--font-display);font-size:44px;font-weight:700;color:var(--muted)}
+.shape .lbl{text-align:center;font-size:14px;padding:7px 4px 9px}
+.terms{font-size:13px;color:var(--faint);text-align:center;margin:0}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:56px;border:0;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:18px;cursor:pointer;box-shadow:0 6px 16px rgba(28,53,87,.28);transition:transform .12s,opacity .2s}
+.btn:active{transform:scale(.98)}
+.btn[disabled]{opacity:.4;cursor:not-allowed;box-shadow:none}
+.actions{position:sticky;bottom:0;margin-top:0;padding-top:18px;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));background:linear-gradient(rgba(237,240,244,0),var(--bg) 28%);z-index:3}
+.screen > .btn{margin-top:10px}
+.aha > .btn{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom,0px));margin-top:12px}
+/* Aha */
+.aha{gap:12px}
+.aha .visual{background:var(--surface);border-radius:18px;padding:14px;display:flex;align-items:center;justify-content:center;gap:16px;box-shadow:var(--shadow)}
+.big{font-family:var(--font-display);font-size:52px;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;line-height:1}
+.personal{margin:0;padding:12px 14px;background:var(--accent-soft);border-left:4px solid var(--accent);border-radius:10px;font-size:16px;font-weight:600;color:var(--ink)}
+.aha p{margin:0}
+.body{font-size:17px;color:var(--ink)}
+.good{font-size:17px;font-weight:700}
+.src{font-size:12.5px;color:var(--faint);font-style:italic}
+.figs{display:flex;gap:10px}
+.figs svg{width:34px;height:64px}
+.figs .f{fill:#B9C3CF;transition:fill .6s ease}
+.figs .on .f{fill:var(--brass)}
+.picks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%}
+.picks div{position:relative;border-radius:12px;overflow:hidden;border:3px solid transparent;transition:border-color .4s,transform .4s}
+.picks img{display:block;width:100%;height:min(22dvh,180px);object-fit:cover;object-position:center top}
+.picks .win{border-color:var(--accent);transform:translateY(-4px)}
+.picks .badge{white-space:nowrap;position:absolute;left:6px;bottom:6px;background:var(--accent);color:var(--accent-ink);font-size:12px;font-weight:700;padding:3px 8px;border-radius:20px;opacity:0;transition:opacity .4s .2s}
+.picks .win .badge{opacity:1}
+.keepadd{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;width:100%}
+.keepadd figure{margin:0;position:relative}
+.keepadd img{display:block;width:100%;height:min(24dvh,170px);object-fit:cover;object-position:center;border-radius:12px}
+.keepadd figcaption{position:absolute;left:6px;top:6px;background:var(--accent);color:var(--accent-ink);font-size:12px;font-weight:700;padding:3px 9px;border-radius:20px}
+.keepadd figure:last-child figcaption{background:var(--brass)}
+.keepadd .plus{font-size:28px;color:var(--brass);font-weight:700}
+/* Loader */
+.loader{gap:18px;padding-top:40px}
+.ring{width:96px;height:96px;margin:0 auto}
+.ring circle{fill:none;stroke-width:8}
+.ring .t{stroke:#D3DAE3}
+.ring .p{stroke:var(--accent);stroke-linecap:round;stroke-dasharray:264;stroke-dashoffset:264;transform:rotate(-90deg);transform-origin:50% 50%;transition:stroke-dashoffset 6s linear}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.checks li{display:flex;gap:10px;align-items:flex-start;font-size:16px;color:var(--faint);transition:color .3s}
+.checks li .c{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid #A9B5C3;display:grid;place-items:center;transition:background .3s,border-color .3s}
+.checks li.done{color:var(--ink);font-weight:600}
+.checks li.done .c{background:var(--accent);border-color:var(--accent)}
+.checks li.done .c::after{content:"";width:5px;height:9px;border:solid var(--accent-ink);border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+/* Email */
+.summary{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:4px 16px;box-shadow:var(--shadow)}
+.row{display:grid;grid-template-columns:1fr;gap:2px;padding:10px 0;border-bottom:1px solid #DDE3EA}
+.row:last-child{border-bottom:0}
+.row .k{font-size:13px;font-weight:600;color:var(--muted)}
+.row .v{font-size:16px;font-weight:700}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:15px;font-weight:700}
+.field input{min-height:56px;border:2px solid var(--line);border-radius:14px;padding:0 16px;font:inherit;font-size:17px;background:var(--surface);color:var(--ink)}
+.field input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.err{color:var(--error);font-size:14px;font-weight:600;margin:0}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:15px;color:var(--muted)}
+.chk input{width:20px;height:20px;margin-top:2px;accent-color:var(--accent)}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.note{font-size:13px;color:var(--faint);text-align:center;margin:0}
+/* Reviews */
+.reviews{display:grid;grid-template-columns:1fr;gap:10px}
+.rev{background:var(--surface);border:1px solid #D6DDE6;border-radius:16px;padding:14px 16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px}
+.rev .who{display:flex;align-items:center;gap:10px}
+.rev .av{width:38px;height:38px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:700;font-size:15px}
+.rev .who b{display:block;font-size:15px}
+.rev .stars{color:var(--brass);font-size:14px;letter-spacing:2px}
+.rev p{margin:0;font-size:15.5px;color:var(--ink)}
+.revnote{font-size:12.5px;color:var(--faint);margin:0}
+/* Final */
+.final{gap:26px;padding-top:6px;padding-bottom:100px}
+.final section{display:flex;flex-direction:column;gap:12px}
+.sent{font-size:14px;color:var(--accent);font-weight:600;background:var(--accent-soft);padding:8px 12px;border-radius:10px;align-self:flex-start}
+.nowgoal{display:grid;grid-template-columns:1fr 1fr;gap:10px;position:relative}
+.nowgoal figure{margin:0;display:flex;flex-direction:column;gap:6px}
+.nowgoal img{width:100%;aspect-ratio:3/4;object-fit:cover;object-position:center top;border-radius:14px;background:var(--panel);box-shadow:var(--shadow)}
+.nowgoal figcaption{font-size:14px;font-weight:700}
+.nowgoal figcaption span{display:block;font-weight:500;color:var(--muted)}
+.disc{font-size:12.5px;color:var(--faint);margin:0}
+.profile{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:4px 18px;box-shadow:var(--shadow)}
+.profile .row .v{font-size:17px}
+.profile .row .x{font-size:15px;color:var(--muted)}
+.verdict{background:var(--accent);color:var(--accent-ink);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.verdict p{margin:0;font-family:var(--font-display);font-weight:700;font-size:23px;line-height:1.22}
+.verdict .btn{background:var(--surface);color:var(--accent);box-shadow:none}
+h3{font-size:23px}
+.gets{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr;gap:10px}
+.gets li{display:grid;grid-template-columns:36px 1fr;gap:12px;align-items:start;background:var(--surface);border:1px solid #D6DDE6;border-radius:14px;padding:12px 14px;box-shadow:var(--shadow)}
+.gets .ic{width:36px;height:36px;border-radius:10px;background:var(--accent-soft);display:grid;place-items:center}
+.gets .ic svg{width:20px;height:20px;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.gets b{display:block;font-size:16px}
+.gets span{font-size:15px;color:var(--muted)}
+.weeks{display:flex;flex-direction:column;gap:8px}
+.week{display:grid;grid-template-columns:70px 1fr;gap:10px;padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid #D6DDE6}
+.week .w{font-size:13px;font-weight:700;color:var(--brass-ink);text-transform:uppercase;letter-spacing:.06em;padding-top:2px}
+.week.blur .t{filter:blur(4px);user-select:none}
+.week .t{font-size:16px}
+.goals{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0;padding:0}
+.goals li{background:var(--accent-soft);color:var(--accent);border-radius:30px;padding:7px 14px;font-size:15px;font-weight:700}
+.plans{display:flex;flex-direction:column;gap:12px}
+.plan{position:relative;display:grid;grid-template-columns:24px 1fr auto;gap:12px;align-items:center;padding:16px;border:2px solid var(--line);border-radius:16px;background:var(--surface);cursor:pointer;text-align:left;box-shadow:var(--shadow)}
+.plan.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.plan .rd{width:22px;height:22px;border-radius:50%;border:2px solid #8C9AAA;display:grid;place-items:center}
+.plan.sel .rd{border-color:var(--accent)}
+.plan.sel .rd::after{content:"";width:12px;height:12px;border-radius:50%;background:var(--accent)}
+.plan .nm{font-weight:700;font-size:17px}
+.plan .pr{font-size:14px;color:var(--muted)}
+.plan .pr s{color:var(--faint)}
+.plan .pd{text-align:right;font-variant-numeric:tabular-nums}
+.plan .pd b{display:block;font-size:22px}
+.plan .pd span{font-size:13px;color:var(--muted)}
+.plan .tag{position:absolute;top:-12px;left:16px;background:var(--brass);color:var(--accent-ink);font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px}
+.renew{font-size:13.5px;color:var(--muted);margin:0}
+.proto{font-size:14px;font-weight:600;color:var(--ink);background:var(--panel);border-radius:10px;padding:10px 12px;margin:0}
+details{background:var(--surface);border:1px solid #D6DDE6;border-radius:14px;padding:0 14px}
+summary{cursor:pointer;list-style:none;font-weight:700;font-size:16px;padding:14px 0;display:flex;justify-content:space-between;gap:10px}
+summary::after{content:"+";color:var(--accent);font-size:20px;line-height:1}
+details[open] summary::after{content:"–"}
+details p{margin:0 0 14px;font-size:16px;color:var(--muted)}
+.foot{font-size:12.5px;color:var(--faint)}
+.float{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));background:linear-gradient(rgba(237,240,244,0),var(--bg) 35%);display:flex;justify-content:center;transition:opacity .25s,transform .25s;z-index:6}
+.float .btn{max-width:440px;animation:pulse 2.4s ease-in-out infinite}
+.float.hide{opacity:0;transform:translateY(20px);pointer-events:none}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(28,53,87,.35)}50%{box-shadow:0 0 0 9px rgba(28,53,87,0)}}
+@media (min-width:700px){
+  .reviews.wide3{grid-template-columns:repeat(3,1fr)}
+  .gets{grid-template-columns:1fr 1fr}
+  h1{font-size:34px}
+}
+@media (max-height:780px){
+  h1{font-size:25px} h2{font-size:22px} .sub{font-size:15.5px} .hint{font-size:14.5px}
+  .opt{min-height:46px;padding:8px 14px;font-size:15.5px} .screen{gap:10px} .options{gap:7px}
+  .btn{min-height:52px}
+  .aha .visual{padding:10px} .big{font-size:40px} .figs svg{width:28px;height:52px}
+  .personal{font-size:15px;padding:10px 12px} .body,.good{font-size:15.5px}
+  .card .lbl{padding:6px 9px 8px;font-size:14px} .card .lbl small{font-size:12.5px}
+  .dense .opt{min-height:42px;padding:7px 14px;font-size:15px} .dense{gap:6px}
+  .summary{padding:2px 14px} .summary .row{padding:7px 0} .field input{min-height:50px}
+  .actions{padding-top:16px}
+  .agecard img{max-height:calc((100dvh - 450px)/2)}
+}
+
+/* fit-to-screen quiz */
+.app:not(.wide){height:100dvh;min-height:0}
+.app:not(.wide) main{min-height:0}
+.app:not(.wide) .screen{min-height:0}
+.fill{flex:1 1 0;min-height:0;grid-auto-rows:minmax(0,1fr)}
+.fill .card{min-height:0}
+.fill .card img,.fill .card .unsure{flex:1 1 0;min-height:0;height:0;aspect-ratio:auto;max-height:none}
+.fill .card img{object-position:center 22%}
+.fill.grid3 .card img{object-fit:contain;object-position:center}
+.agecard .lbl{padding:6px 8px 7px}
+.visual.grow{flex:1 1 0;min-height:110px;align-items:stretch}
+.grow .picks,.grow .keepadd{height:100%}
+.grow .picks div,.grow .keepadd figure{height:100%;min-height:0}
+.grow .picks img,.grow .keepadd img{height:100%;max-height:none}
+.grow .keepadd{grid-template-rows:100%}
+.mini{position:relative;display:flex;flex-direction:column;gap:4px}
+.mini-track{display:grid}
+.mini-card{grid-area:1/1;background:var(--surface);border:1px solid #D6DDE6;border-radius:14px;padding:10px 12px;box-shadow:var(--shadow);opacity:0;transition:opacity .5s;display:flex;flex-direction:column;gap:5px}
+.mini-card.on{opacity:1}
+.mini-card .who{display:flex;align-items:center;gap:8px;font-size:14px}
+.mini-card .av{width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:700;font-size:12px}
+.mini-card .stars{color:var(--brass);font-size:12px;letter-spacing:1px;margin-left:auto}
+.mini-card p{margin:0;font-size:14px;line-height:1.35}
+.mini .revnote{font-size:11.5px;text-align:center}
+@media (max-height:780px){
+  .dense .opt{min-height:38px;padding:6px 12px;font-size:14.5px} .dense{gap:5px}
+  .email-tight .summary .row{padding:5px 0} .email-tight .row .v{font-size:15px}
+  .field input{min-height:48px}
+}
+@media (max-height:680px){
+  .screen{gap:8px;padding-top:6px} h2{font-size:20px} h1{font-size:22px} .sub{font-size:14.5px}
+  .opt{min-height:42px;font-size:15px} .btn{min-height:48px;font-size:16px}
+  .personal{font-size:14px} .body,.good{font-size:14.5px} .src{font-size:11.5px}
+  .card .lbl{font-size:13px;padding:5px 8px 6px} .card .lbl small{display:none}
+  .mini-card p{font-size:13px}
+}
+
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.mini-card p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.email-tight .chk{font-size:14px}
+@media (max-height:900px){ .dense .opt{min-height:44px;padding:8px 14px;font-size:15.5px} .dense{gap:6px} }
+@media (max-height:780px){ .dense .opt{min-height:38px;padding:6px 12px;font-size:14.5px} .dense{gap:5px} .email-tight .sub{display:none} .mini-card p{-webkit-line-clamp:2} }
+@media (max-height:600px){
+  .opt,.dense .opt{min-height:36px;padding:5px 12px;font-size:14px} .options,.dense{gap:5px}
+  .hint{display:none} h2{font-size:19px} .personal{padding:7px 10px;font-size:13.5px}
+  .btn{min-height:44px} .actions{padding-top:10px;padding-bottom:10px}
+  .email-tight .summary .row:nth-child(n+2){display:none} .mini .revnote{display:none}
+}
+
+@media (max-height:680px){ .dense{gap:4px} .dense .opt{min-height:37px} }
+@media (max-height:600px){ .dense{gap:3px} .dense .opt{min-height:32px;padding:4px 12px;font-size:13.5px;line-height:1.2} h2{font-size:18px;margin-bottom:6px} }
+
+.costs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.costs li{display:grid;grid-template-columns:22px 1fr;gap:10px;align-items:start;background:var(--surface);border:1px solid #D6DDE6;border-radius:12px;padding:8px 12px}
+.costs .x{width:20px;height:20px;border-radius:50%;background:#F3E3DF;position:relative;margin-top:2px}
+.costs .x::before,.costs .x::after{content:"";position:absolute;left:5px;top:9px;width:10px;height:2px;background:var(--error);transform:rotate(45deg)}
+.costs .x::after{transform:rotate(-45deg)}
+.costs b{display:block;font-size:15px}
+.costs span{display:block;font-size:13.5px;color:var(--muted);line-height:1.3}
+.better{flex-direction:column;gap:8px;border:2px solid var(--accent)}
+.better-h b{display:block;font-size:15px;color:var(--accent)}
+.better-h span{font-size:13px;color:var(--muted)}
+.grow.better .picks{flex:1 1 0;min-height:0;height:auto}
+@media (max-height:780px){ .costs li{padding:6px 10px} .costs span{font-size:12.5px} .costs b{font-size:14px} }
+@media (max-height:680px){ .costs span{display:none} .better-h span{display:none} .visual.grow{min-height:70px} .costs li{padding:5px 10px} .aha .src{font-size:11px} }
+
+.paybar{position:sticky;top:calc(env(safe-area-inset-top,0px) + 0px);z-index:4;display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--surface);border:1px solid #D6DDE6;border-radius:14px;padding:8px 8px 8px 14px;box-shadow:var(--shadow);font-weight:700;font-size:15px}
+.btn.small{width:auto;min-height:40px;padding:0 16px;font-size:15px;box-shadow:none}
+.ba{background:var(--surface);border-radius:18px;padding:12px;box-shadow:var(--shadow);gap:10px!important}
+.ba-head{display:grid;grid-template-columns:1fr 1fr;background:var(--panel);border-radius:10px;padding:3px;font-size:14px;font-weight:700;text-align:center}
+.ba-head span{padding:7px 4px;border-radius:8px;color:var(--muted)}
+.ba-head .on{background:var(--accent);color:var(--accent-ink)}
+.ba-imgs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ba-imgs figure{margin:0;position:relative}
+.ba-imgs img{display:block;width:100%;height:clamp(150px,30vh,240px);object-fit:cover;object-position:center 20%;border-radius:12px;background:var(--panel)}
+.ba-imgs figcaption{position:absolute;left:6px;bottom:6px;right:6px;background:rgba(16,25,35,.72);color:#fff;font-size:12.5px;font-weight:700;padding:4px 8px;border-radius:8px}
+.ba-rows{display:flex;flex-direction:column}
+.ba-rows div{display:grid;grid-template-columns:1fr 1fr;column-gap:8px;padding:8px 2px;border-top:1px solid #E3E8EE}
+.ba-rows .k{grid-column:1/-1;font-size:12.5px;color:var(--muted);font-weight:600}
+.ba-rows .was{font-size:15px;font-weight:700;color:var(--muted)}
+.ba-rows .now{font-size:15px;font-weight:700;color:var(--accent)}
+.need{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.need li{display:grid;grid-template-columns:24px 1fr;gap:10px;align-items:start;font-size:16px;font-weight:600}
+.need li::before{content:"";width:22px;height:22px;border-radius:50%;background:var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12l4 4 8-8'/%3E%3C/svg%3E") center/14px no-repeat}
+.never{background:var(--accent);color:var(--accent-ink);border-radius:18px;padding:20px}
+.never h3{color:var(--accent-ink)}
+.never p{margin:0;font-size:16px}
+.guarantee{background:var(--surface);border:2px solid var(--brass);border-radius:18px;padding:18px}
+.guarantee p{margin:0;font-size:15px;color:var(--muted)}
+
+.capsule{flex-direction:column;gap:10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips span{font-size:13px;font-weight:700;padding:5px 10px;border-radius:20px;background:#F3E3DF;color:var(--error);transition:opacity .4s,text-decoration-color .4s;text-decoration:line-through;text-decoration-color:transparent}
+.chips span.off{opacity:.55;text-decoration-color:var(--error)}
+.caps{flex:1 1 0;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.caps figure{margin:0;position:relative;min-height:0;opacity:.35;transform:translateY(6px);transition:opacity .5s,transform .5s}
+.caps figure.on{opacity:1;transform:none}
+.caps img{display:block;width:100%;height:100%;object-fit:cover;border-radius:12px;background:var(--panel)}
+.caps figcaption{position:absolute;left:6px;bottom:6px;background:var(--surface);color:var(--accent);font-size:12px;font-weight:700;padding:3px 8px;border-radius:20px}
+@media (max-height:680px){ .chips span{font-size:12px;padding:4px 8px} .aha h2{font-size:19px} }
+
+/* keep heads in frame */
+.looksgrid .card img,.agecard img,.fill .agecard img{object-position:center top!important}
+.ba-imgs figure:last-child img,.picks img{object-position:center top}
+.caps img{object-position:center}
+/* final spacing */
+.final{gap:44px}
+.final section{gap:16px}
+.final h3{margin-bottom:2px}
+.gets span{line-height:1.35}
+.gets li{align-items:center}
+.need{gap:12px}
+.ba-rows div{row-gap:3px}
+.final .sub{line-height:1.4}
+
+.needbox{background:var(--accent);color:var(--accent-ink);border-radius:20px;padding:28px 20px 30px;gap:22px!important}
+.needbox h3{color:var(--accent-ink);text-align:center;font-size:27px}
+.needbox .need{gap:18px}
+.needbox .need li{grid-template-columns:34px 1fr;align-items:center;font-weight:400;font-size:16.5px;color:#C9D4E2;line-height:1.4}
+.needbox .need li b{color:#FFFFFF;font-weight:700}
+.needbox .need li::before{width:32px;height:32px;background-color:rgba(255,255,255,.12);background-size:16px}
+
+.eyebrow.light{color:#E2B979}
+.never{display:flex;flex-direction:column;gap:10px}
+
+.verdict .vsub{font-size:15.5px;line-height:1.45;color:#D7E0EB}
+.each .row .v{font-weight:600;font-size:16px}
+
+.based{background:var(--surface);border:1px solid #D6DDE6;border-left:4px solid var(--brass);border-radius:12px;padding:10px 14px;box-shadow:var(--shadow)}
+.based span{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--brass-ink);margin-bottom:3px}
+.based p{margin:0;font-size:16px;font-weight:600}
+.hook-sub{color:var(--ink)}
+@media (max-height:600px){ .aha .good{display:none} .based p.res{font-size:13px} }
+.based p.res{margin-top:4px;font-weight:500;color:var(--muted)}
+.capimg{flex:1 1 0;min-height:90px;border-radius:16px;overflow:hidden;box-shadow:var(--shadow);background:#E9E3DA}
+.capimg img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
+@media (max-height:680px){ .based p{font-size:14.5px} }
+
+.aha h2.h-wide{text-wrap:wrap;font-size:clamp(18px,5.2vw,23px);letter-spacing:-.01em}
+
+.aha h2.h-lines{font-size:clamp(17px,5.1vw,24px);line-height:1.2}
+.h-lines span{display:block}
+.planlist{list-style:none;margin:0;padding:6px 14px;display:flex;flex-direction:column;justify-content:space-around;flex:1 1 0;min-height:0;background:var(--surface);border-radius:16px;box-shadow:var(--shadow)}
+.planlist li{display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid #E3E8EE}
+.planlist li:last-child{border-bottom:0}
+.planlist .n{width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:700;font-size:14px}
+.planlist b{display:block;font-size:16px}
+.planlist small{display:block;font-size:14px;color:var(--muted);line-height:1.3}
+@media (max-height:680px){ .planlist small{display:none} .planlist li{padding:5px 0} }
+@media (max-height:600px){ .based{padding:7px 10px} .based span{font-size:11px;margin-bottom:1px} .based p{font-size:13.5px} .aha .body,.aha .good{font-size:13.5px} }
+.nowdir{flex:1 1 0;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nowdir figure{margin:0;display:flex;flex-direction:column;min-height:0;background:var(--surface);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+.nowdir img{flex:1 1 0;min-height:60px;height:0;width:100%;object-fit:cover;object-position:center top;display:block}
+.nowdir figcaption{padding:9px 11px 11px;font-size:14.5px;line-height:1.35;font-weight:600;color:var(--ink)}
+@media (max-height:680px){ .nowdir figcaption{font-size:13px;padding:7px 9px 8px} }
+.tagline{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;padding:6px 14px 6px 12px;border-radius:30px;background:#F5ECDF;border:1px solid #E4CFAE;color:var(--brass-ink);font-size:14px;font-weight:700;line-height:1.25}
+.tagline::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--brass)}
+@media (max-height:680px){ .tagline{font-size:13px;padding:4px 12px 4px 10px} }
+@media (max-width:400px){ .picks .badge{font-size:10.5px;padding:2px 6px;left:4px;bottom:4px} .picks .hrt{display:none} }
+.picks .hrt{font-style:normal}
+.pillnv{align-self:flex-start;background:var(--accent);color:#fff;font-weight:700;font-size:13.5px;padding:5px 13px;border-radius:30px}
+.h1br{color:var(--brass);display:block}
+.hrule{height:1px;background:#C3CCD7;margin:-2px 0}
+.hook-sub b{color:var(--accent)}
+@media (max-height:680px){ .pillnv{font-size:12.5px;padding:4px 11px} }
+.hookbm{align-items:stretch;text-align:center}
+.hookbm .pillnv{align-self:center}
+.hookbm h1{text-align:center}
+.hookbm .swoosh{display:block;width:120px;height:10px;margin:-8px auto -2px;color:var(--brass)}
+.hookbm .sub{text-align:center}
+.agehint{margin:2px 0 0;font-size:15px;font-weight:600;color:var(--muted);text-align:center}
+.agecard.bm{background:var(--accent);border-color:var(--accent);padding:0 0 6px}
+.agecard.bm img{border-radius:12px 12px 0 0}
+.agecard.bm .lbl{display:flex;align-items:center;justify-content:space-between;gap:6px;margin:6px 6px 0;padding:6px 6px 6px 12px;background:#F2ECE3;border-radius:10px;font-size:15px;font-weight:700;color:var(--ink);text-align:left}
+.agecard.bm .go{flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center}
+.agecard.bm .go svg{width:15px;height:15px}
+.agecard.bm.sel{box-shadow:0 0 0 3px var(--brass)}
+.agecard.bm.sel .lbl{background:#F2ECE3}
+@media (max-height:600px){ .hookbm .hook-sub{display:none} .hookbm h1{font-size:21px} }
+@media (max-height:680px){ .agecard.bm .lbl{font-size:13.5px;padding:4px 4px 4px 10px} .agecard.bm .go{width:24px;height:24px} .agehint{font-size:13.5px} }
+.hookbm{container-type:inline-size}
+.hookbm h1{font-size:min(44px,calc(100cqi / 17));line-height:1.22}
+.hookbm h1 .l{display:block;white-space:nowrap}
+.hookbm h1 .h1br{display:inline}
+.agecard.bm{background:var(--surface);border-color:#C3CCD7}
+.agecard.bm .lbl{background:var(--bg)}
+@media (min-width:700px){
+  .app.hookwide{max-width:760px}
+  .hookbm .grid2{grid-template-columns:repeat(4,1fr)}
+  .hookbm .sub{max-width:560px;margin-inline:auto}
+  .hookbm .swoosh{width:160px}
+}
+/* desktop: wider centered column, larger centered headings (BetterMe-like) */
+@media (min-width:700px){
+  .app:not(.wide):not(.hookwide){max-width:860px}
+  .app:not(.wide) .screen:not(.hookbm){align-items:center;padding-top:28px}
+  .app:not(.wide) .screen:not(.hookbm)>*{width:100%;max-width:620px}
+  .app:not(.wide) .screen:not(.hookbm)>h2{max-width:820px;text-align:center;font-size:36px;line-height:1.2}
+  .app:not(.wide) .screen:not(.hookbm)>.hint{text-align:center;font-size:16px;margin-top:-4px}
+  .app:not(.wide) .screen:not(.hookbm)>.eyebrow{width:auto;max-width:none;text-align:center;align-self:center;font-size:15px}
+  .app:not(.wide) .screen:not(.hookbm) .opt{min-height:58px;font-size:17.5px;padding:12px 20px;border-radius:16px}
+  .app:not(.wide) .screen:not(.hookbm) .dense .opt{min-height:50px;font-size:16.5px;padding:9px 18px}
+  .app:not(.wide) .screen:not(.hookbm) .options{gap:10px}
+  .app:not(.wide) .screen:not(.hookbm) .dense{gap:8px}
+  .app:not(.wide) .screen.aha>.body{text-align:center}
+  .app:not(.wide) .screen.loader>*{text-align:center}
+  .app:not(.wide) .screen .checks{max-width:420px;text-align:left}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="app" id="app">
+  <header class="top" id="top">
+    <div class="bar">
+      <button class="back off" id="back" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="brand">His Style <b>Makeover</b></div>
+      <div class="count" id="count"></div>
+    </div>
+    <div class="progress" id="progress"><i id="bar"></i></div>
+  </header>
+  <main id="main"></main>
+</div>
+<div class="float hide" id="float" hidden><button class="btn" id="floatBtn">Get his plan</button></div>
+
+<script>
+/* ---------- Copy and data ---------- */
+const IMG = n => 'img/' + n + '.webp';
+const DIRS = {
+  relaxed:{name:'Relaxed & casual', img:'dir-relaxed', missing:"A versatile overshirt and well-fitting chinos could help create relaxed, everyday looks.",
+    looks:['Linen and a light knit','Overshirt and denim','Navy knit and chinos','Utility shirt and jeans']},
+  classic:{name:'Classic & understated', img:'dir-classic', missing:"A timeless knit and a pair of loafers could be great additions to his classic wardrobe.",
+    looks:['Waistcoat and dark trousers','Crew-neck and slim trousers','A long coat for evenings','All-black knit and trousers']},
+  sharp:{name:'Sharp & tailored', img:'dir-sharp', missing:"A tailored blazer and versatile trousers could help create a sharper, more polished look.",
+    looks:['Navy suit, open collar','Camel blazer, cream trousers','Burgundy shirt, dark trousers','Green blazer, all black']},
+  rugged:{name:'Rugged & outdoorsy', img:'dir-rugged', missing:"A structured jacket and leather boots could add texture and character to his outfits.",
+    looks:['Field jacket and boots','Flannel shirt and denim','Gilet and chinos','Suede jacket and cargos']}
+};
+const NOW = {
+  casual:{name:'Casual basics', sub:'T-shirts, jeans, sneakers', img:'now-casual', stay:"His everyday T-shirts and jeans could be a great starting point for fresh outfit combinations."},
+  sporty:{name:'Sporty', sub:'Hoodies, joggers, activewear', img:'now-sporty', stay:"Some of his sporty basics could work well in more polished outfits without sacrificing comfort."},
+  smart:{name:'Smart casual', sub:'Shirts, chinos, loafers', img:'now-smart', stay:"His usual shirts and chinos could be a strong foundation for new combinations."},
+  mix:{name:'A mix of everything', sub:'No consistent style', img:'now-mix', stay:"There may already be plenty of useful pieces in his wardrobe. The key is finding what works together."}
+};
+const SHAPES = {
+  rectangle:{name:'Rectangle', cut:'Layers and structured jackets add shape.'},
+  triangle:{name:'Triangle', cut:'Structured shoulders and darker trousers balance his frame.'},
+  inverted:{name:'Inverted triangle', cut:'Straight-cut trousers and simple tops keep it balanced.'},
+  oval:{name:'Oval', cut:'Vertical lines, open collars and a clean fit through the middle.'},
+  trapezoid:{name:'Trapezoid', cut:'Most cuts work for him. The fit is what matters.'},
+  unsure:{name:"I'm not sure", cut:"We'll start with classic straight cuts and adjust after the Wardrobe Audit."}
+};
+const BOTHERS = [
+  ['same','He wears the same things all the time','Most men stick to what feels safe and comfortable. It\'s habit, not a lack of taste.','The same outfits on repeat'],
+  ['occasion',"His outfits don't match the occasion","Many men simply don't know what each occasion calls for. A few ready outfits solve that.",'Outfits that don\'t fit the occasion'],
+  ['fit',"His clothes don't fit him well","The right fit changes how a man looks more than any trend. It's the easiest win.",'Clothes that don\'t fit him right'],
+  ['worn','His clothes are old and worn out',"Many men wear clothes until they fall apart. Comfort wins, until it doesn't.",'Worn-out favorites'],
+  ['mismatch',"He has lots of clothes, but nothing goes together","That's not a shopping problem, it's a system problem. A capsule wardrobe fixes exactly that.",'Pieces that don\'t work together'],
+  ['suits',"He doesn't know what suits him","Most men don't. That's exactly what his plan is for.",'Not knowing what suits him'],
+  ['effort',"I make an effort to look good, and he doesn't","You're far from the only one who feels this way. And it's easier to change than it seems.",'Not matching your effort']
+];
+const TRIED = [
+  ['bought',"I've bought clothes for him","You chose great pieces. But he didn't choose them, so they stayed in the closet."],
+  ['gifts',"I've given him clothes as gifts","A gift is lovely, but it's still your choice. He wears what feels like his."],
+  ['shopping',"We've gone shopping together","Stores wear him out before he finds anything. This time he picks from the couch, in 2 minutes."],
+  ['outfits',"I've put together outfits for him myself","You've already done the styling work. Let him make the final call, and the outfits finally get worn."],
+  ['pinterest',"I've saved outfit ideas from Pinterest or Instagram","You had the ideas, but he never saw himself in them. Now he sees outfits picked for his build."],
+  ['shown',"I've shown him outfit ideas and asked what he likes","You were on the right track. Now he can explore outfit ideas himself and save the ones he likes."],
+  ['stylist',"I've suggested seeing a personal stylist","A stylist means appointments and a stranger's taste. You know him better, and he still gets the final say."],
+  ['nothing',"Nothing yet, I'm not sure where to start","Perfect timing to start the right way: your shortlist, his choice."]
+];
+const OCCASIONS = [
+  ['everyday','Everyday life','everyday life'],
+  ['dates','Dates and dinners together','dates and dinners'],
+  ['work','Work or business meetings','work'],
+  ['special','Special occasions','special occasions'],
+  ['travel','Travel and weekends','travel and weekends'],
+  ['everywhere','Pretty much everywhere','every part of his week']
+];
+const BARRIERS = [
+  ['wear',"He doesn't wear what I buy him","He saves the looks he likes in your shared wardrobe","Invite him to your shared wardrobe"],
+  ['feelings',"I'm afraid of hurting his feelings","Start with one swap, framed as a gift","Replace his most worn favorite with a better version"],
+  ['suits',"I don't know what suits him","Cuts and colors matched to his shape","Snap his closet for the Wardrobe Audit"],
+  ['money',"I don't want to spend money on clothes he won't wear","Start from what he already owns","Wardrobe Audit: keep, replace, add 3–5 pieces"],
+  ['shopping',"He hates shopping","Everything ready to order online","Order the 3 priority pieces"],
+  ['time',"I don't have time to search","A ready shopping list","Order from his list in one go"],
+  ['none',"Nothing, we're ready to start","",""]
+];
+const DESIRES = [
+  'Seeing him look more stylish and attractive',
+  'Knowing he feels confident and comfortable',
+  'Not having to choose his outfits anymore',
+  'Having more great looks for our dates',
+  'Seeing him wear clothes we both like',
+  'Updating his wardrobe without overspending'
+];
+const AGES = ['18–34','35–44','45–54','55+'];
+
+const REVIEWS = [
+  ['Emma R.','Together 6 years',"I'd been buying him clothes for years and half of them never left the closet. This time he picked the outfits himself, and he's already worn the overshirt three times."],
+  ['Sarah K.','Married 11 years',"We kept most of his wardrobe. Four new pieces, and our date nights look completely different. He still looks like him, just sharper."],
+  ['Laura M.','Together 3 years',"He hates shopping, so I planned his outfits myself. One evening he opened the app and saved two looks he liked. No arguments."]
+];
+const reviewsHTML = (wide) => `<section style="display:flex;flex-direction:column;gap:12px"><h3>Success stories from women like you</h3>
+  <div class="reviews ${wide?'wide3':''}">${REVIEWS.map(r=>`<div class="rev"><div class="who"><span class="av">${r[0][0]}</span><div><b>${esc(r[0])}</b><span class="stars" aria-label="5 out of 5">★★★★★</span></div></div><p>“${esc(r[2])}”</p><small class="revnote">${esc(r[1])}</small></div>`).join('')}</div>
+  <p class="revnote">Placeholder reviews for the prototype.</p></section>`;
+let miniTimer=null;
+const reviewsMini = () => `<div class="mini" aria-label="Reviews"><div class="mini-track">${REVIEWS.map((r,i)=>`<div class="mini-card ${i?'':'on'}"><div class="who"><span class="av">${r[0][0]}</span><b>${esc(r[0])}</b><span class="stars" aria-label="5 out of 5">★★★★★</span></div><p>“${esc(r[2])}”</p></div>`).join('')}</div><span class="revnote">Placeholder reviews for the prototype</span></div>`;
+function startMini(s){ clearInterval(miniTimer); let i=0; const cards=s.querySelectorAll('.mini-card'); if(!cards.length) return;
+  miniTimer=setInterval(()=>{ if(!document.body.contains(cards[0])){clearInterval(miniTimer);return} cards[i].classList.remove('on'); i=(i+1)%cards.length; cards[i].classList.add('on'); },4500); }
+/* ---------- Flow ---------- */
+const FLOW = [
+  {id:'age', type:'hook', q:1},
+  {id:'bothers', type:'multi', q:2, title:'What bothers you most about his style?', hint:'Pick all that apply.', opts:BOTHERS.map(b=>[b[0],b[1]])},
+  {id:'aha1', type:'aha1'},
+  {id:'now', type:'cards', q:3, title:'Which best describes his everyday style?', hint:'Pick the closest match.', cls:'img-sq',
+    opts:Object.entries(NOW).map(([k,v])=>({k,name:v.name,sub:v.sub,img:v.img}))},
+  {id:'tried', type:'multi', q:4, title:'What have you already tried to improve his style?', hint:'Pick all that apply.', opts:TRIED.map(t=>[t[0],t[1]]), exclusive:'nothing'},
+  {id:'aha2', type:'aha2'},
+  {id:'shape', type:'shapes', q:5, title:'Which body shape is closest to his?', hint:'Pick one.'},
+  {id:'occasions', type:'multi', q:6, title:'Where would you love to see him looking more put-together?', hint:'Pick all that apply.', opts:OCCASIONS.map(o=>[o[0],o[1]]), exclusive:'everywhere'},
+  {id:'dir', type:'cards', q:7, title:'Which style would you love to see him in?', hint:"Pick one. You'll see real outfits next.", cls:'img-pt',
+    opts:Object.entries(DIRS).map(([k,v])=>({k,name:v.name,img:v.img}))},
+  {id:'looks', type:'looks', q:8, title:'Which of these looks would you love to see him wear?', hint:'Pick all that apply.'},
+  {id:'aha3', type:'aha3'},
+  {id:'barriers', type:'multi', q:9, title:"What's made it hard so far?", hint:'Pick all that apply.', opts:BARRIERS.map(b=>[b[0],b[1]]), exclusive:'none'},
+  {id:'desires', type:'multi', q:10, title:'What would make you happiest about his new style?', hint:'Pick all that apply.', opts:DESIRES.map((d,i)=>['d'+i,d])},
+  {id:'ahaShared', type:'ahaShared'},
+  {id:'loader', type:'loader'},
+  {id:'email', type:'email'},
+  {id:'final', type:'final'}
+];
+const A = {}; // answers
+let idx = 0; const hist = [];
+const main = document.getElementById('main');
+const $ = (s,el=document) => el.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- Derived values ---------- */
+const firstOf = (list, picked) => list.find(x => (picked||[]).includes(x[0]));
+/* Priority: when several answers are picked, the aha uses the strongest one, not the first. */
+const PRI = {
+  bothers:['mismatch','same','occasion','suits','fit','worn','effort'],
+  tried:['outfits','pinterest','bought','gifts','shopping','shown','stylist','nothing'],
+  barriers:['wear','feelings','money','suits','shopping','time','none'],
+  desires:['d4','d2','d0','d3','d1','d5']
+};
+const topOf = (list, picked, order) => { const set=new Set(picked||[]); const k=order.find(x=>set.has(x)); return k?list.find(x=>x[0]===k):null; };
+const D = {
+  dir:()=>DIRS[A.dir||'classic'], now:()=>NOW[A.now||'casual'], shape:()=>SHAPES[A.shape||'unsure'],
+  bother:()=>topOf(BOTHERS,A.bothers,PRI.bothers)||BOTHERS[0],
+  tried:()=>topOf(TRIED,A.tried,PRI.tried)||TRIED[7],
+  occasion:()=>{const o=firstOf(OCCASIONS,A.occasions); return o?o[2]:'everyday life'},
+  barrier:()=>{const b=topOf(BARRIERS,(A.barriers||[]).filter(x=>x!=='none'),PRI.barriers); return b||BARRIERS[0]},
+  barrierPicked:()=>!!firstOf(BARRIERS.filter(x=>x[0]!=='none'),A.barriers),
+  desireKey:()=>{const set=new Set(A.desires||[]); return PRI.desires.find(k=>set.has(k))||'d0'},
+  desire:()=>DESIRES[+D.desireKey().slice(1)],
+  goalImg:()=>{const d=A.dir||'classic'; const l=(A.looks||[])[0]||'1'; return 'look-'+d+'-'+l}
+};
+
+/* ---------- Chrome ---------- */
+function chrome(step){
+  const q = step.q;
+  const lastQ = [...FLOW.slice(0,idx+1)].reverse().find(s=>s.q);
+  const inQuiz = !['loader','email','final'].includes(step.type);
+  document.getElementById('progress').hidden = !inQuiz;
+  document.getElementById('count').textContent = inQuiz && lastQ ? lastQ.q + '/10' : '';
+  document.getElementById('bar').style.width = inQuiz && lastQ ? (lastQ.q/10*100)+'%' : '0';
+  document.getElementById('back').classList.toggle('off', idx===0 || step.type==='loader' || step.type==='final');
+  document.getElementById('app').classList.toggle('wide', step.type==='final');
+  document.getElementById('app').classList.toggle('hookwide', step.type==='hook');
+}
+function go(n){ hist.push(idx); idx=n; render(); window.scrollTo(0,0); }
+function next(){ go(idx+1); }
+document.getElementById('back').onclick = () => { if(!hist.length) return; idx = hist.pop(); if(FLOW[idx].type==='loader'){ idx = hist.pop() ?? 0; } render(); };
+
+function render(){
+  const step = FLOW[idx]; chrome(step);
+  const fl = document.getElementById('float'); fl.hidden = step.type!=='final';
+  main.innerHTML = ''; const s = document.createElement('section'); s.className='screen'; main.appendChild(s);
+  ({hook,multi,cards,shapes,looks,aha1,aha2,ahaShared,aha3,loader,email,final})[step.type](s, step);
+}
+const stagger = el => el.querySelectorAll('.opt,.card').forEach((o,i)=>o.style.animationDelay=(i*65)+'ms');
+
+function singlePick(el, val, id){
+  A[id] = val;
+  el.parentElement.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));
+  el.classList.add('sel');
+  setTimeout(next, 380);
+}
+
+/* ---------- Screens ---------- */
+function hook(s){
+  s.classList.add('hookbm');
+  const arrow='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+  s.innerHTML = `
+    <div class="pillnv">For women who want to upgrade his style</div>
+    <h1><span class="l">Want him to dress better <span class="h1br">without</span></span> <span class="l h1br">doing all the work yourself?</span></h1>
+    <svg class="swoosh" viewBox="0 0 200 12" aria-hidden="true"><path d="M3 9 C 60 2, 140 1, 197 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+    <p class="sub hook-sub">Get a <b>personalized wardrobe plan</b> for your man with ready-to-wear outfits, based on his preferences and <b>what he already owns</b>.</p>
+    <p class="agehint">Select his age to start</p>
+    <div class="grid2 fill" role="group" aria-label="His age">${AGES.map((a,i)=>`<button class="card agecard bm" id="age-${a.replace(/\W/g,'')}" data-v="${a}"><img src="${IMG('age-'+(i+1))}" alt=""><span class="lbl"><span>Age: ${a}</span><i class="go">${arrow}</i></span></button>`).join('')}</div>
+    <p class="terms">By continuing, you agree to our Terms and Privacy Policy.</p>`;
+  s.querySelectorAll('.agecard').forEach(b=>b.onclick=()=>singlePick(b,b.dataset.v,'age'));
+  stagger(s);
+}
+function multi(s, st){
+  const picked = new Set(A[st.id]||[]);
+  s.innerHTML = `<h2>${esc(st.title)}</h2><p class="hint">${esc(st.hint)}</p>
+    <div class="options ${st.opts.length>7?'dense':''}" role="group">${st.opts.map(([k,l])=>`<button class="opt ${picked.has(k)?'sel':''}" id="${st.id}-${k}" data-k="${k}" aria-pressed="${picked.has(k)}"><span class="box"></span><span>${esc(l)}</span></button>`).join('')}</div>
+    <div class="actions"><button class="btn" id="${st.id}-continue" ${picked.size?'':'disabled'}>Continue</button></div>`;
+  const btn = s.querySelector('#'+st.id+'-continue');
+  s.querySelectorAll('.opt').forEach(o=>o.onclick=()=>{
+    const k=o.dataset.k;
+    if(picked.has(k)) picked.delete(k); else {
+      if(st.exclusive && k===st.exclusive) picked.clear();
+      else if(st.exclusive) picked.delete(st.exclusive);
+      picked.add(k);
+    }
+    s.querySelectorAll('.opt').forEach(x=>{const on=picked.has(x.dataset.k); x.classList.toggle('sel',on); x.setAttribute('aria-pressed',on)});
+    btn.disabled = !picked.size;
+  });
+  btn.onclick = () => { A[st.id] = st.opts.map(o=>o[0]).filter(k=>picked.has(k)); next(); };
+  stagger(s);
+}
+function cards(s, st){
+  s.innerHTML = `<h2>${esc(st.title)}</h2><p class="hint">${esc(st.hint)}</p>
+    <div class="grid2 fill">${st.opts.map(o=>`<button class="card ${A[st.id]===o.k?'sel':''}" id="${st.id}-${o.k}" data-k="${o.k}"><img class="${st.cls}" src="${IMG(o.img)}" alt=""><span class="lbl">${esc(o.name)}${o.sub?`<small>${esc(o.sub)}</small>`:''}</span></button>`).join('')}</div>`;
+  s.querySelectorAll('.card').forEach(c=>c.onclick=()=>{ if(st.id==='dir' && A.dir!==c.dataset.k) A.looks=[]; singlePick(c,c.dataset.k,st.id); });
+  stagger(s);
+}
+function shapes(s, st){
+  const keys=['rectangle','triangle','inverted','oval','trapezoid','unsure'];
+  s.innerHTML = `<h2>${esc(st.title)}</h2><p class="hint">${esc(st.hint)}</p>
+    <div class="grid3 fill">${keys.map(k=>`<button class="card shape ${A.shape===k?'sel':''}" id="shape-${k}" data-k="${k}">${k==='unsure'?'<span class="unsure">?</span>':`<img src="${IMG('shape-'+k)}" alt="">`}<span class="lbl">${SHAPES[k].name}</span></button>`).join('')}</div>`;
+  s.querySelectorAll('.card').forEach(c=>c.onclick=()=>singlePick(c,c.dataset.k,'shape'));
+  stagger(s);
+}
+function looks(s, st){
+  const d=A.dir||'classic', dd=DIRS[d]; const picked=new Set(A.looks||[]);
+  s.innerHTML = `<h2>${esc(st.title)}</h2><p class="hint">${esc(dd.name)}. ${esc(st.hint)}</p>
+    <div class="grid2 fill looksgrid">${dd.looks.map((l,i)=>{const k=String(i+1);return `<button class="card ${picked.has(k)?'sel':''}" id="look-${k}" data-k="${k}" aria-pressed="${picked.has(k)}"><span class="tick"></span><img class="look-img" src="${IMG('look-'+d+'-'+k)}" alt="Look ${k}"></button>`}).join('')}</div>
+    <div class="actions"><button class="btn" id="looks-continue" ${picked.size?'':'disabled'}>Continue</button></div>`;
+  const btn=s.querySelector('.btn');
+  s.querySelectorAll('.card').forEach(c=>c.onclick=()=>{const k=c.dataset.k; picked.has(k)?picked.delete(k):picked.add(k); c.classList.toggle('sel',picked.has(k)); c.setAttribute('aria-pressed',picked.has(k)); btn.disabled=!picked.size;});
+  btn.onclick=()=>{A.looks=['1','2','3','4'].filter(k=>picked.has(k)); next();};
+  stagger(s);
+}
+function countUp(el, to, suffix, ms=1100){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){el.textContent=to+suffix;return}
+  const t0=performance.now(); const tick=t=>{const p=Math.min(1,(t-t0)/ms); el.textContent=Math.round(to*p*(2-p))+suffix; if(p<1) requestAnimationFrame(tick)}; requestAnimationFrame(tick);
+}
+const woman = `<svg viewBox="0 0 34 64" aria-hidden="true"><circle class="f" cx="17" cy="9" r="7"/><path class="f" d="M10 19h14l6 26H4z"/><rect class="f" x="10" y="45" width="5" height="17" rx="2"/><rect class="f" x="19" y="45" width="5" height="17" rx="2"/></svg>`;
+const AHA1_LINES = {
+  'same': "We'll help create fresh combinations from the pieces he already loves wearing.",
+  'occasion': "We'll help put together outfits for everyday life, dates, and special occasions.",
+  'fit': "We'll focus on cuts and combinations that better complement his shape.",
+  'worn': "We'll help identify what to refresh and what he can keep wearing.",
+  'mismatch': "We'll help turn separate pieces into complete, easy-to-wear outfits.",
+  'suits': "We'll help narrow down the styles and outfits that could work best for him.",
+  'effort': "We'll help create more polished looks that still feel comfortable and true to him."};
+function aha1(s){
+  s.classList.add('aha');
+  const k=D.bother()[0];
+  s.innerHTML = `<div class="eyebrow">From frustration to easy outfits</div>
+    <h2 class="h-lines"><span>Less frustration with his style.</span><span>More outfits you'll both love.</span></h2>
+    <p class="body">Turn his style goals into a capsule wardrobe with complete looks he can easily explore, save, and wear.</p>
+    <div class="based"><span>Based on your answer</span><p>${esc(AHA1_LINES[k]||AHA1_LINES.same)}</p></div>
+    <div class="capimg"><img src="${IMG('aha1-capsule')}" alt="A capsule of pieces that work together"></div>
+    <button class="btn" id="aha1-ok">Continue</button>`;
+  s.querySelector('.btn').onclick=next;
+}
+const AHA2_LINES = {
+  outfits:"Complete outfits come ready, so you don't have to put them together yourself.",
+  pinterest:"Outfits are matched to his build and style, so you don't need to collect ideas.",
+  bought:"His plan shows which pieces are worth buying, so every purchase fits his wardrobe.",
+  gifts:"Every new piece fits into ready outfits, so your gifts work with what he owns.",
+  shopping:"His shopping list is ready, so you know exactly what to look for.",
+  shown:"You can both save favorite looks in one place.",
+  stylist:"Personal outfits and a clear plan, without booking appointments.",
+  nothing:"His plan shows exactly where to start."
+};
+function aha2(s){
+  s.classList.add('aha');
+  const k=D.tried()[0];
+  const items=[['Outfit combinations','Complete looks from what he owns and a few new pieces'],['Shopping recommendations','Only the pieces worth buying'],['Clear next steps','What to do first, then next']];
+  s.innerHTML = `<div class="eyebrow">We've got the styling covered</div>
+    <h2>No more searching, matching, or planning his outfits from scratch.</h2>
+    <p class="body">Get a personalized wardrobe plan with outfit combinations, shopping recommendations, and clear next steps, all in one place.</p>
+    <div class="based"><span>Based on your answer</span><p>${esc(AHA2_LINES[k]||AHA2_LINES.nothing)}</p></div>
+    <div class="capimg"><img src="${IMG('aha2-plan')}" alt="His outfits planned in the app"></div>
+    <button class="btn" id="aha2-ok">Continue</button>`;
+  s.querySelector('.btn').onclick=next;
+}
+/* Aha 4: answer 9 = the mechanism, answer 10 = the result. Joined by a template that fits the goal type. */
+const SHARED_CORE = {
+  wear:"Let him choose the looks he likes before you buy",
+  feelings:"Invite him to explore new looks at his own pace, without pressure to change",
+  suits:"Start with personalized outfit ideas, then let him save the ones he likes",
+  money:"Let him save his favorites before you buy",
+  shopping:"Give him ready-to-explore looks in the app, without store visits",
+  time:"Let him explore ready-made outfits himself, whenever he wants",
+  none:"Start his wardrobe plan and invite him to explore looks whenever he's ready"
+};
+const SHARED_END = {
+  d4:", and build a wardrobe that reflects both your tastes.",
+  d0:", and build a more put-together everyday look.",
+  d1:", and build looks he feels confident wearing.",
+  d3:", and get more outfit options for your dates.",
+  d5:", and make smarter clothing purchases.",
+  d2:", so there's less outfit planning for you."
+};
+function ahaShared(s){
+  s.classList.add('aha');
+  const imgs=['look-relaxed-2','look-classic-2','look-sharp-2'];
+  const line = SHARED_CORE[D.barrierPicked()?D.barrier()[0]:'none'] + SHARED_END[D.desireKey()];
+  s.innerHTML = `<div class="eyebrow">Made for both of you</div>
+    <h2>One shared wardrobe where you can both create and plan his outfits</h2>
+    <div class="based"><span>Based on your answers</span><p>${esc(line)}</p></div>
+    <div class="visual grow">
+      <div class="picks">${imgs.map((m,i)=>`<div id="pk${i}"><img src="${IMG(m)}" alt=""><span class="badge">${i===1?'Saved by both<i class="hrt"> ♥</i>':''}</span></div>`).join('')}</div>
+    </div>
+    <button class="btn" id="shared-ok">Continue</button>`;
+  setTimeout(()=>s.querySelector('#pk1')?.classList.add('win'),700);
+  s.querySelector('.btn').onclick=next;
+}
+function aha3(s){
+  s.classList.add('aha');
+  const n=D.now(), d=D.dir();
+  s.innerHTML = `<div class="eyebrow">Start with what he already owns</div>
+    <h2>A better style doesn't have to mean a whole new wardrobe.</h2>
+    <div class="nowdir">
+      <figure><img src="${IMG(n.img)}" alt="${esc(n.name)}"><figcaption>${esc(n.stay)}</figcaption></figure>
+      <figure><img src="${IMG(d.img)}" alt="${esc(d.name)}"><figcaption>${esc(d.missing)}</figcaption></figure>
+    </div>
+    <p class="body">Next, his Wardrobe Audit will help turn these style ideas into a plan built around what he already owns.</p>
+    <button class="btn" id="aha3-ok">Continue</button>`;
+  s.querySelector('.btn').onclick=next;
+}
+function loader(s){
+  s.classList.add('loader');
+  const lines=[`Matching cuts to his ${D.shape().name.toLowerCase()} shape`.replace("i'm not sure shape",'build'),
+    `Turning his ${D.now().name.toLowerCase()} into a ${D.dir().name.toLowerCase()} look`,
+    `Planning outfits for ${D.occasion()}`,'Starting from what he already owns'];
+  s.innerHTML = `<svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="t" cx="50" cy="50" r="42"/><circle class="p" cx="50" cy="50" r="42"/></svg>
+    <h2 style="text-align:center">Building his style plan…</h2>
+    <ul class="checks">${lines.map(l=>`<li><span class="c"></span><span>${esc(l)}</span></li>`).join('')}</ul>`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>s.querySelector('.p').style.strokeDashoffset='0'));
+  s.querySelectorAll('.checks li').forEach((li,i)=>setTimeout(()=>li.classList.add('done'),1000+i*1300));
+  setTimeout(()=>{ if(FLOW[idx].type==='loader'){ idx++; render(); } },6400);
+}
+function email(s){
+  s.classList.add('email-tight');
+  s.innerHTML = `<h2>His style plan is ready</h2>
+    <p class="sub">A ${esc(D.dir().name.toLowerCase())} look, built for his ${A.shape&&A.shape!=='unsure'?esc(D.shape().name.toLowerCase())+' shape':'build'}.</p>
+    <div class="summary">
+      <div class="row"><span class="k">Your goal</span><span class="v">${esc(D.desire())}</span></div>
+      <div class="row"><span class="k">What's holding his look back</span><span class="v">${esc(D.bother()[3])}</span></div>
+      <div class="row"><span class="k">We'll plan around</span><span class="v">${esc(D.barrierPicked()?D.barrier()[1]:'Starting smart from day one')}</span></div>
+    </div>
+    <form id="ef" novalidate style="display:flex;flex-direction:column;gap:12px">
+      <div class="field"><label for="em" class="sr">Where should we send his plan?</label><input id="em" type="email" inputmode="email" autocomplete="email" placeholder="Your email" value="${esc(A.email||'')}"></div>
+      <p class="err" id="eerr" hidden>Please check your email address.</p>
+      <div class="hp" aria-hidden="true"><label for="company">Company</label><input id="company" tabindex="-1" autocomplete="off"></div>
+      <label class="chk" for="tips"><input id="tips" type="checkbox"><span>Send me style tips and offers too</span></label>
+      <button class="btn" id="send" type="submit">Send my plan</button>
+      <p class="note">No spam. Unsubscribe anytime. This prototype doesn't send emails.</p>
+    </form>
+    ${reviewsMini()}`;
+  startMini(s);
+  $('#ef',s).onsubmit = e => { e.preventDefault(); const v=$('#em',s).value.trim();
+    if($('#company',s).value) return;
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)){ $('#eerr',s).hidden=false; $('#em',s).focus(); return; }
+    A.email=v; A.tips=$('#tips',s).checked; sendLead(); next(); };
+}
+/* Lead to Telegram via /api/lead (Vercel). Skipped in previews and local files. */
+function sendLead(){
+  try{
+    if(!/^https?:$/.test(location.protocol) || /claude|localhost|github\.io/.test(location.hostname)) return;
+    const lab=(list,keys)=>(keys||[]).map(k=>{const x=list.find(r=>r[0]===k);return x?x[1]:k});
+    const data={
+      email:A.email, tips:!!A.tips, age:A.age||'',
+      bothers:lab(BOTHERS,A.bothers), style_now:A.now?NOW[A.now].name:'', tried:lab(TRIED,A.tried),
+      shape:A.shape?SHAPES[A.shape].name:'', occasions:lab(OCCASIONS,A.occasions),
+      direction:A.dir?DIRS[A.dir].name:'', looks:(A.looks||[]).length,
+      barriers:lab(BARRIERS,A.barriers), desires:(A.desires||[]).map(k=>DESIRES[+k.slice(1)])
+    };
+    fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),keepalive:true}).catch(()=>{});
+  }catch(e){}
+}
+const ICON = {
+  check:'<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12l3 3 5-6"/>',
+  share:'<circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M3 19c0-3 2.5-5 5-5s5 2 5 5M11 19c0-3 2.5-5 5-5s5 2 5 5"/>',
+  cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  audit:'<path d="M4 7h16M4 12h10M4 17h7"/><path d="M16 15l2 2 4-4"/>',
+  preview:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/>',
+  capsule:'<path d="M8 4l4 3 4-3 4 4-3 3v9H7v-9L4 8z"/>',
+  pick:'<path d="M5 12l4 4L19 6"/>',
+  list:'<path d="M6 6h13M6 12h13M6 18h13"/><circle cx="3" cy="6" r=".5"/><circle cx="3" cy="12" r=".5"/><circle cx="3" cy="18" r=".5"/>'
+};
+const PLANS = [
+  {k:'p4', nm:'4-week plan', was:'85.20', now:'33.00', day:'1.18', renew:'85.20 zł every 4 weeks', tag:'Recommended to start'},
+  {k:'p12', nm:'12-week plan', was:'213.00', now:'85.00', day:'1.01', renew:'213.00 zł every 12 weeks'},
+  {k:'p24', nm:'24-week plan', was:'336.00', now:'134.40', day:'0.80', renew:'336.00 zł every 24 weeks'}
+];
+function plansHTML(id, plan){
+  return `<div class="plans" role="radiogroup" aria-label="Plans">${PLANS.map(p=>`<button class="plan ${p.k===plan?'sel':''}" data-k="${p.k}" role="radio" aria-checked="${p.k===plan}">${p.tag?`<span class="tag">${p.tag}</span>`:''}<span class="rd"></span><span><span class="nm">${p.nm}</span><br><span class="pr"><s>${p.was} zł</s> ${p.now} zł</span></span><span class="pd"><b>${p.day} zł</b><span>per day</span></span></button>`).join('')}</div>
+    <button class="btn pay" id="${id}">Get my plan</button>
+    <p class="proto" hidden>This is a prototype: checkout is not connected.</p>
+    <p class="renew"></p>`;
+}
+function final(s){
+  s.classList.add('final');
+  const d=D.dir(), n=D.now(), b=D.barrier(), picked=D.barrierPicked();
+  const dl=(A.desires||[]).map(i=>DESIRES[+i.slice(1)]);
+  const lookName = d.looks[+((A.looks||[])[0]||'1')-1];
+  let plan = A.plan||'p4';
+  s.innerHTML = `
+  <div class="paybar"><span>His plan is ready</span><button class="btn small" id="barBtn">Get his plan</button></div>
+  <section>
+    <span class="sent">Your plan is on its way to ${esc(A.email||'your inbox')}</span>
+    <h1>His ${esc(d.name.toLowerCase())} style plan is ready</h1>
+    <p class="sub">Built for a man aged ${esc(A.age||'35–44')}${A.shape&&A.shape!=='unsure'?' with '+(/^[aeiou]/i.test(D.shape().name)?'an ':'a ')+esc(D.shape().name.toLowerCase())+' body shape':''}. Starting from what he already owns.</p>
+  </section>
+  <section class="ba">
+    <div class="ba-head"><span>Without a plan</span><span class="on">With his plan</span></div>
+    <div class="ba-imgs">
+      <figure><img src="${IMG(n.img)}" alt="His current everyday style"><figcaption>${esc(n.name)}</figcaption></figure>
+      <figure><img src="${IMG(D.goalImg())}" alt="The look you picked"><figcaption>${esc(d.name)}</figcaption></figure>
+    </div>
+    <div class="ba-rows">
+      <div><span class="k">His style</span><span class="was">${esc(D.bother()[3])}</span><span class="now">${esc(d.name)}</span></div>
+      <div><span class="k">Your role</span><span class="was">His personal stylist</span><span class="now">You lead, he joins anytime</span></div>
+      <div><span class="k">Shopping</span><span class="was">Guesswork and returns</span><span class="now">3–5 pieces that work</span></div>
+    </div>
+    <p class="disc">Illustration. See him in his own new outfits with Glow-up Preview in the app.</p>
+  </section>
+  <section>
+    <h3>His style profile</h3>
+    <div class="profile">
+      <div class="row"><span class="k">Cuts that suit him</span><span class="v">${esc(D.shape().cut)}</span></div>
+      <div class="row"><span class="k">What's held you back</span><span class="v">${picked?esc(b[1]):'Nothing big, you’re ready'}</span><span class="x">${esc(picked?'So in his plan: '+b[2].charAt(0).toLowerCase()+b[2].slice(1)+'.':'So in his plan: you plan together, he joins anytime.')}</span></div>
+      <div class="row"><span class="k">Your first step this week</span><span class="v">${esc(picked?b[3]:BARRIERS[0][3])}</span></div>
+    </div>
+  </section>
+  <section class="verdict">
+    <p>His style. Your shared wardrobe.</p>
+    <span class="vsub">A capsule wardrobe with ready outfits, advice on what he already owns and a shopping list. Use it the way that suits you both.</span>
+  </section>
+  <section id="plans">
+    <h3>Get his Style Makeover plan</h3>
+    ${plansHTML('pay1',plan)}
+  </section>
+  <section>
+    <h3>What's inside his plan</h3>
+    <p class="sub">Everything you need to upgrade his style, without hours of searching or unnecessary shopping.</p>
+    <ul class="gets">
+      <li><span class="ic"><svg viewBox="0 0 24 24">${ICON.capsule}</svg></span><div><b>Capsules &amp; ready outfits</b><span>Complete looks for everyday life, dates, and more, tailored to his style.</span></div></li>
+      <li><span class="ic"><svg viewBox="0 0 24 24">${ICON.share}</svg></span><div><b>Shared wardrobe &amp; His Pick</b><span>Plan his outfits yourself, or let him explore, create, and save his favorite looks.</span></div></li>
+      <li><span class="ic"><svg viewBox="0 0 24 24">${ICON.preview}</svg></span><div><b>Glow-up Preview</b><span>Preview how he could look in new outfits before buying anything.</span></div></li>
+      <li><span class="ic"><svg viewBox="0 0 24 24">${ICON.cal}</svg></span><div><b>Outfit calendar</b><span>Plan ready-to-wear looks for work, dates, and trips in advance.</span></div></li>
+      <li><span class="ic"><svg viewBox="0 0 24 24">${ICON.audit}</svg></span><div><b>Wardrobe Audit by photo</b><span>Discover what to keep, what to replace, and which pieces could complete his wardrobe.</span></div></li>
+      <li><span class="ic"><svg viewBox="0 0 24 24">${ICON.list}</svg></span><div><b>Personalized shopping list</b><span>Get a prioritized list of pieces worth adding, tailored to your budget.</span></div></li>
+    </ul>
+  </section>
+  <section>
+    <h3>What each of you gets</h3>
+    <div class="profile each">
+      <div class="row"><span class="k">For you</span><span class="v">A ready plan, outfits and a shopping list, without hours of searching.</span></div>
+      <div class="row"><span class="k">For him</span><span class="v">His own wardrobe with ready outfits he can browse, save and plan.</span></div>
+      <div class="row"><span class="k">For you both</span><span class="v">One shared space to plan outfits and shopping, whoever takes the lead.</span></div>
+    </div>
+  </section>
+  <section class="needbox">
+    <h3>You need this plan if</h3>
+    <ul class="need">
+      <li><span>You're <b>tired of being his personal stylist</b></span></li>
+      <li><span>You buy him clothes, and they <b>stay in the closet</b></span></li>
+      <li><span>You want him to look <b>as put-together as you</b></span></li>
+      <li><span>You want to update his style <b>without arguments</b></span></li>
+      <li><span>You don't want to pay for <b>a whole new wardrobe</b></span></li>
+    </ul>
+  </section>
+  ${dl.length?`<section><h3>Goals for his plan also include</h3><ul class="goals">${dl.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></section>`:''}
+  ${reviewsHTML(true)}
+  <section class="never">
+    <span class="eyebrow light">Your vision. His choice.</span>
+    <h3>One wardrobe. Two ways to style it.</h3>
+    <p>You can take the lead in planning his outfits or invite him to create looks himself. With your shared wardrobe, you can both explore outfit ideas, save favorites, and plan what he'll wear.</p>
+    <p><b>You can handle the styling. He can join whenever he wants.</b></p>
+  </section>
+  <section id="plans2">
+    <h3>Choose your plan</h3>
+    ${plansHTML('pay2',plan)}
+  </section>
+  <section>
+    <h3>People often ask</h3>
+    <details><summary>How do you know what suits him?</summary><p>From your answers about his build, style and occasions, plus photos of his closet. Every recommendation comes with a short reason why it suits him.</p></details>
+    <details><summary>Does he get access too?</summary><p>Yes. You send him an invite, and once he accepts, you share his wardrobe: you can both explore outfit ideas, save favorites and plan what he'll wear. He can turn off your access anytime.</p></details>
+    <details><summary>What if he doesn't like the clothes?</summary><p>He can join anytime, create looks himself and save his favorites, so the plan follows his taste, not only yours.</p></details>
+    <details><summary>Do I have to buy a whole new wardrobe?</summary><p>No. The Wardrobe Audit starts from what he owns and lists only the few pieces worth adding.</p></details>
+    <details><summary>Will he be okay with me doing this?</summary><p>Most men are: 76% are happy for their partner to help buy them clothes (UK survey, 2017). And in your shared wardrobe, he can save the looks he likes himself.</p></details>
+    <details><summary>Do I need his photo?</summary><p>Only for Glow-up Preview, and only with his consent. Everything else works from your answers and photos of his closet.</p></details>
+    <details><summary>Can I cancel anytime?</summary><p>Yes. Cancel in your account settings before the next payment.</p></details>
+  </section>
+  <section class="guarantee">
+    <h3>30-day money-back guarantee</h3>
+    <p>If the plan isn't right for you, you can ask for a refund within 30 days, under BetterMe's money-back policy.</p>
+  </section>
+  <p class="foot">Concept prototype for the BetterMe Style test task. Prices are shown for reference based on BetterMe plans; reviews are placeholders. Source: UK survey of men, 2017.</p>`;
+  const sync=()=>{const p=PLANS.find(x=>x.k===plan);
+    s.querySelectorAll('.plan').forEach(x=>{const on=x.dataset.k===plan; x.classList.toggle('sel',on); x.setAttribute('aria-checked',on)});
+    s.querySelectorAll('.renew').forEach(r=>r.textContent=`Your first ${p.nm.replace('-week plan',' weeks')} cost ${p.now} zł, then ${p.renew} until you cancel. Cancel anytime in your account settings.`);};
+  sync();
+  s.querySelectorAll('.plan').forEach(b=>b.onclick=()=>{plan=b.dataset.k; A.plan=plan; sync();});
+  const toPlans=()=>$('#plans',s).scrollIntoView({behavior:'smooth',block:'start'});
+  $('#barBtn',s).onclick=toPlans; document.getElementById('floatBtn').onclick=toPlans;
+  s.querySelectorAll('.pay').forEach(b=>b.onclick=()=>{b.nextElementSibling.hidden=false});
+  const fl=document.getElementById('float'); const vis=new Set();
+  const io=new IntersectionObserver(es=>{es.forEach(e=>e.isIntersecting?vis.add(e.target):vis.delete(e.target)); fl.classList.toggle('hide',vis.size>0)},{threshold:.15});
+  setTimeout(()=>fl.classList.remove('hide'),600);
+  io.observe($('#plans',s)); io.observe($('#plans2',s));
+}
+render();
+</script>
+<script>try{const tg=window.Telegram&&Telegram.WebApp;if(tg&&tg.initData!==undefined){tg.ready();tg.expand();tg.setHeaderColor&&tg.setHeaderColor("#EDF0F4");tg.setBackgroundColor&&tg.setBackgroundColor("#EDF0F4");}}catch(e){}</script>
+</body></html>
